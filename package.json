@@ -1,0 +1,58 @@
+{
+  "name": "prompt2image",
+  "version": "0.1.0",
+  "description": "Convert any text prompt into a compact, machine-readable PNG — with honest per-provider token accounting.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "prompt2image": "bin/prompt2image.js"
+  },
+  "main": "./dist/core/index.js",
+  "types": "./dist/core/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "web/",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "gen:atlas": "node scripts/gen-atlas.mjs",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "keywords": [
+    "prompt",
+    "png",
+    "ocr",
+    "vision-tokens",
+    "token-optimization",
+    "text-to-image",
+    "llm"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "tsx": "^4.10.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.1.0"
+  }
+}
