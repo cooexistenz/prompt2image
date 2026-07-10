@@ -60,8 +60,8 @@ wasted, and sizes pages to each provider's billing grid:
 
 | Profile  | Glyph | Page geometry | Why |
 |----------|-------|---------------|-----|
-| `claude` | 5×8   | ≤1568×728 px  | Claude fits images within a 1568 px long edge and ~1.15 MP before billing ≈ pixels÷750 — this shape reaches the model unresampled |
-| `openai` | 8×16  | ≤1528×768 px  | GPT bills 85 + 170 per 512 px tile after resizing; larger glyphs survive the resample |
+| `claude` | 5×8   | ≤1568×728 px  | Claude bills ≈ pixels÷750; this shape reaches every Claude model unresampled (current models accept up to a 2576 px edge, ~4784 tokens/image cap) |
+| `openai` | 8×16  | ≤1528×768 px  | GPT-5.2+ bills per 32 px patch (≈ pixels÷1024, 1536-patch budget) — this page is a clean 48×24 patch grid; larger glyphs survive resampling. Legacy 4o/4.1-class tile billing also supported in the library |
 | `gemini` | 8×16  | ≤768×768 px   | Gemini bills 258 tokens per 768 px tile — one page, one tile |
 | `ocr`    | 16×32 | generous margins, real line breaks | Tuned for Tesseract/EasyOCR/PaddleOCR, not token count |
 

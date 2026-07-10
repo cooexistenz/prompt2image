@@ -7,6 +7,7 @@ import {
   estimateTextTokens,
   geminiImageTokens,
   openaiImageTokens,
+  openaiTileImageTokens,
 } from '../src/core/tokens.js';
 
 describe('atlas', () => {
@@ -76,18 +77,27 @@ describe('reflow', () => {
 });
 
 describe('token estimators', () => {
-  it('anthropic: bills px/750 under the caps, resamples above', () => {
+  it('anthropic: bills px/750, fits to 2576px long edge, caps at 4784', () => {
     expect(anthropicImageTokens(750, 100)).toBe(100);
-    // 1568x728 fits both bounds exactly → billed at full pixel count
+    // 1568x728 is under every bound → billed at full pixel count
     expect(anthropicImageTokens(1568, 728)).toBe(Math.ceil((1568 * 728) / 750));
-    // Oversized image gets scaled down before billing
-    expect(anthropicImageTokens(3136, 1456)).toBeLessThanOrEqual(Math.ceil(1_150_000 / 750) + 2);
+    // Oversized image gets scaled to the 2576px edge; never exceeds the cap
+    expect(anthropicImageTokens(3136, 1456)).toBeLessThanOrEqual(4784);
+    expect(anthropicImageTokens(6000, 6000)).toBe(4784);
   });
 
-  it('openai: 85 base + 170 per 512px tile', () => {
-    expect(openaiImageTokens(512, 512)).toBe(85 + 170);
-    expect(openaiImageTokens(1024, 768)).toBe(85 + 170 * 4);
-    expect(openaiImageTokens(1528, 768)).toBe(85 + 170 * 6);
+  it('openai (GPT-5.2+): 32px patches at multiplier 1.0, 1536-patch budget', () => {
+    expect(openaiImageTokens(512, 512)).toBe(16 * 16);
+    expect(openaiImageTokens(908, 27)).toBe(29); // dense strip: 29x1 patches
+    expect(openaiImageTokens(1528, 768)).toBe(48 * 24);
+    expect(openaiImageTokens(4096, 4096)).toBeLessThanOrEqual(1536);
+    // mini-class multiplier
+    expect(openaiImageTokens(512, 512, 1.62)).toBe(Math.ceil(256 * 1.62));
+  });
+
+  it('openai legacy tile formula (GPT-4o/4.1/5.1 class)', () => {
+    expect(openaiTileImageTokens(512, 512)).toBe(85 + 170);
+    expect(openaiTileImageTokens(1528, 768)).toBe(85 + 170 * 6);
   });
 
   it('gemini: 258 per 768px tile, small images one tile', () => {

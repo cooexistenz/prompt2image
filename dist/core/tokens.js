@@ -3,14 +3,47 @@
  * These implement each provider's *published* billing rules; they are
  * estimates, not quotes — providers change resampling and pricing. The point
  * is an honest comparison: the tool reports when plain text is cheaper.
+ *
+ * Formula sources (verified 2026-07):
+ *  - Anthropic: tokens ≈ pixels/750 after fit-to-limits. Current models
+ *    (Opus 4.7+, Sonnet 5, Fable 5) accept up to a 2576px long edge with a
+ *    ~4784-token per-image cap; older models resample to a 1568px long edge
+ *    and ~1.15MP. Both bill identically for images within 1568px — which is
+ *    everything this renderer produces in dense profiles.
+ *  - OpenAI GPT-5.2 and later (current ChatGPT models): patch-based — the
+ *    image is covered by 32x32px patches, tokens = patch count x a per-model
+ *    multiplier (1.0 for full-size models, 1.62 mini, 2.46 nano), with a
+ *    1,536-patch budget (2,500 on newer full-size models) that triggers a
+ *    downscale when exceeded. The older tile formula (base + per-512px-tile)
+ *    applies to GPT-4o/4.1/5.1-class models and is exported separately.
+ *  - Google Gemini: 258 tokens per 768px tile (one tile when ≤384px).
  */
 export function anthropicImageTokens(width, height) {
-    const long = Math.max(width, height);
-    const scale = Math.min(1, 1568 / long, Math.sqrt(1_150_000 / (width * height)));
-    return Math.ceil((width * scale * (height * scale)) / 750);
+    const scale = Math.min(1, 2576 / Math.max(width, height));
+    const tokens = Math.ceil((width * scale * (height * scale)) / 750);
+    return Math.min(tokens, 4784);
 }
-export function openaiImageTokens(width, height) {
-    // detail=high: fit within 2048x2048, then scale so the short side is ≤768.
+const OPENAI_PATCH = 32;
+const OPENAI_PATCH_BUDGET = 1536; // conservative: newest full-size models allow 2500
+/** Patch-based billing used by GPT-5.2+ (and gpt-4.1-mini/nano/o4-mini class). */
+export function openaiImageTokens(width, height, multiplier = 1.0) {
+    // Fit within the 2048px max dimension first.
+    const fit = Math.min(1, 2048 / Math.max(width, height));
+    let w = width * fit;
+    let h = height * fit;
+    let patches = Math.ceil(w / OPENAI_PATCH) * Math.ceil(h / OPENAI_PATCH);
+    if (patches > OPENAI_PATCH_BUDGET) {
+        // Shrink so the patch grid fits the budget, per the documented formula.
+        const s = Math.sqrt((OPENAI_PATCH_BUDGET * OPENAI_PATCH * OPENAI_PATCH) / (w * h));
+        w *= s;
+        h *= s;
+        patches = Math.min(OPENAI_PATCH_BUDGET, Math.ceil(w / OPENAI_PATCH) * Math.ceil(h / OPENAI_PATCH));
+    }
+    return Math.ceil(patches * multiplier);
+}
+/** Legacy tile billing (GPT-4o / GPT-4.1 / GPT-5.1 class, detail=high):
+ *  fit 2048px, short side to 768px, then base + perTile per 512px tile. */
+export function openaiTileImageTokens(width, height, base = 85, perTile = 170) {
     let w = width;
     let h = height;
     const fit = Math.min(1, 2048 / Math.max(w, h));
@@ -23,7 +56,7 @@ export function openaiImageTokens(width, height) {
         h *= s;
     }
     const tiles = Math.ceil(w / 512) * Math.ceil(h / 512);
-    return 85 + 170 * tiles;
+    return base + perTile * tiles;
 }
 export function geminiImageTokens(width, height) {
     if (width <= 384 && height <= 384)
