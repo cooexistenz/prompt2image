@@ -22,9 +22,15 @@ when plain text wins and you shouldn't use an image at all.
 ```bash
 git clone https://github.com/cooexistenz/prompt2image
 cd prompt2image
-npm install
-npm run dev            # playground on http://127.0.0.1:8018
+npm start              # playground on http://127.0.0.1:8018 — no npm install needed
 ```
+
+The compiled `dist/` ships in the repo and there are zero runtime
+dependencies, so running the server, CLI, and dashboard requires nothing but
+Node 18+. `npm install` is only needed for *development* (TypeScript,
+tests). Note for older Macs (macOS 11 and earlier): the test runner's
+toolchain (vitest → esbuild) ships binaries built for macOS 12+, so
+`npm install` may fail there — running the tool itself is unaffected.
 
 Render a prompt:
 
