@@ -105,7 +105,8 @@ Two mechanisms:
   "profile": "claude | openai | gemini | ocr",     // optional, default claude
   "options": {                                      // all optional
     "background": "white | transparent",
-    "banner": true,           // in-image reader instructions
+    "banner": true,           // in-image reader header (default text: "user prompt")
+    "bannerText": "user prompt",  // custom header wording, ≤200 chars
     "reflow": true,           // ↵ line packing
     "embedOriginal": false,   // iTXt metadata
     "scale": 1, "maxCols": 312, "maxHeightPx": 728, "maxPages": 8,

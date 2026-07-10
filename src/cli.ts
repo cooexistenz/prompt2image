@@ -22,6 +22,7 @@ Options:
       --json            Print the full token report as JSON on stdout
       --transparent     Transparent background instead of white
       --no-banner       Skip the in-image reader banner
+      --banner-text <text>  Custom banner wording (default: "user prompt")
       --no-reflow       Keep real line breaks instead of ↵-packed rows
       --embed           Embed the original prompt losslessly as PNG metadata
       --scale <n>       Integer glyph scale (default per profile)
@@ -71,6 +72,9 @@ for (let i = 0; i < args.length; i++) {
       break;
     case '--no-banner':
       opts.banner = false;
+      break;
+    case '--banner-text':
+      opts.bannerText = args[++i] ?? fail('missing value for --banner-text');
       break;
     case '--no-reflow':
       opts.reflow = false;

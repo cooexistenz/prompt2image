@@ -26,6 +26,9 @@ export interface RenderOptions {
   reflow?: boolean;
   /** Draw a one-line header telling the reader how to interpret the page. */
   banner?: boolean;
+  /** Custom banner wording. Default: "user prompt" plus the ↵ legend when
+   *  reflow is active and a page counter on multi-page renders. */
+  bannerText?: string;
   /** Opaque white or alpha-transparent background. */
   background?: 'white' | 'transparent';
   /** Horizontal / vertical page padding in pixels. */
@@ -67,7 +70,10 @@ export class PageLimitError extends Error {
   }
 }
 
-const DEFAULTS: Required<Omit<RenderOptions, 'embedOriginal'>> & { embedOriginal: boolean } = {
+const DEFAULTS: Required<Omit<RenderOptions, 'embedOriginal' | 'bannerText'>> & {
+  embedOriginal: boolean;
+  bannerText: string | undefined;
+} = {
   atlas: 'dense',
   scale: 1,
   maxCols: 312,
@@ -76,6 +82,7 @@ const DEFAULTS: Required<Omit<RenderOptions, 'embedOriginal'>> & { embedOriginal
   maxPages: 8,
   reflow: true,
   banner: true,
+  bannerText: undefined,
   background: 'white',
   padX: 4,
   padY: 4,
@@ -83,9 +90,10 @@ const DEFAULTS: Required<Omit<RenderOptions, 'embedOriginal'>> & { embedOriginal
   embedOriginal: false,
 };
 
-function bannerText(page: number, total: number, reflowed: boolean): string {
-  const parts = [`TEXT PAGE ${page}/${total}`, 'read row by row'];
-  if (reflowed) parts.push(`${NEWLINE_MARK} = line break`);
+function defaultBannerText(page: number, total: number, reflowed: boolean, custom?: string): string {
+  const parts = [custom !== undefined ? custom : 'user prompt'];
+  if (custom === undefined && reflowed) parts.push(`${NEWLINE_MARK} = line break`);
+  if (total > 1) parts.push(`page ${page}/${total}`);
   return parts.join('  |  ');
 }
 
@@ -148,7 +156,7 @@ export function renderText(text: string, options: RenderOptions = {}): RenderRes
 
     let y = opt.padY;
     if (opt.banner) {
-      const label = bannerText(p + 1, totalPages, reflowed);
+      const label = defaultBannerText(p + 1, totalPages, reflowed, opt.bannerText);
       let x = opt.padX;
       for (const ch of label) {
         if (x + cellW > width - opt.padX) break;

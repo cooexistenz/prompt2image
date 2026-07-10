@@ -95,6 +95,7 @@ const ALLOWED_OPTIONS = new Set([
   'maxPages',
   'reflow',
   'banner',
+  'bannerText',
   'background',
   'padX',
   'padY',
@@ -117,6 +118,9 @@ function parseRenderOptions(body: RenderRequestBody): { prompt: string; opts: Re
     for (const [k, v] of Object.entries(body.options)) {
       if (!ALLOWED_OPTIONS.has(k)) {
         throw Object.assign(new Error(`unknown option "${k}"`), { status: 400 });
+      }
+      if (k === 'bannerText' && (typeof v !== 'string' || v.length > 200)) {
+        throw Object.assign(new Error('"bannerText" must be a string of at most 200 characters'), { status: 400 });
       }
       (opts as Record<string, unknown>)[k] = v;
     }

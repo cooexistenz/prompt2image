@@ -74,6 +74,15 @@ describe('renderText', () => {
     expect(r.droppedSample.length).toBeGreaterThan(0);
   });
 
+  it('accepts custom banner text (and stays a valid PNG)', () => {
+    const r = renderText('Mein Haus hat die Adresse Maximilianstraße 5.', {
+      bannerText: 'user prompt:',
+    });
+    expect(r.pages.length).toBe(1);
+    expect(r.droppedChars).toBe(0);
+    parsePng(r.pages[0]!.png);
+  });
+
   it('embeds the original prompt as iTXt when asked', () => {
     const r = renderText('secret original', { embedOriginal: true, banner: false });
     const png = parsePng(r.pages[0]!.png);

@@ -22,6 +22,9 @@ export interface RenderOptions {
     reflow?: boolean;
     /** Draw a one-line header telling the reader how to interpret the page. */
     banner?: boolean;
+    /** Custom banner wording. Default: "user prompt" plus the ↵ legend when
+     *  reflow is active and a page counter on multi-page renders. */
+    bannerText?: string;
     /** Opaque white or alpha-transparent background. */
     background?: 'white' | 'transparent';
     /** Horizontal / vertical page padding in pixels. */

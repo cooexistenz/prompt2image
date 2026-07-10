@@ -256,6 +256,11 @@
               <label class="switch"><input type="checkbox" id="optTransparent">Transparent background</label>
               <label class="switch"><input type="checkbox" id="optEmbed">Embed original as metadata</label>
             </div>
+            <div style="margin-top:12px">
+              <label class="lbl" for="optBannerText">Banner text <span style="font-weight:400;color:var(--muted-fg)">(shown in-image; empty = "user prompt")</span></label>
+              <input id="optBannerText" type="text" maxlength="200" placeholder="user prompt"
+                style="width:100%;min-height:40px;padding:0 12px;font:400 14px var(--mono);color:var(--fg);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius)">
+            </div>
           </fieldset>
 
           <div class="actions">
@@ -366,6 +371,8 @@ Reply as a short memo in German.`;
     const profile = document.querySelector('input[name=profile]:checked').value;
     const options = {};
     if (!$('optBanner').checked) options.banner = false;
+    const bt = $('optBannerText').value.trim();
+    if (bt) options.bannerText = bt;
     if (!$('optReflow').checked) options.reflow = false;
     if ($('optTransparent').checked) options.background = 'transparent';
     if ($('optEmbed').checked) options.embedOriginal = true;
